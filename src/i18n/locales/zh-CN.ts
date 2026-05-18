@@ -216,6 +216,7 @@ export default {
       noDeviceFound: '未搜索到任何设备',
       noWindowFound: '未搜索到任何窗口',
       connectFailed: '自动连接失败',
+      retryConnect: '连接失败，第 {{attempt}} 次重试...',
       autoSelectedDevice:
         '尚未手动选择过设备，已自动匹配到「{{name}}」。如需更换，请在连接设置中手动选择，下次将记住您的选择。',
       autoSelectedWindow:

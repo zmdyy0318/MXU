@@ -217,6 +217,7 @@ export default {
       noDeviceFound: 'デバイスが見つかりませんでした',
       noWindowFound: 'ウィンドウが見つかりませんでした',
       connectFailed: '自動接続に失敗しました',
+      retryConnect: '接続失敗、リトライ {{attempt}}...',
       autoSelectedDevice:
         'デバイスが未設定のため、「{{name}}」を自動的に選択しました。変更する場合は接続設定で手動選択してください。次回以降は選択内容が保存されます。',
       autoSelectedWindow:

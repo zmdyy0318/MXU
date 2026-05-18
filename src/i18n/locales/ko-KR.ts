@@ -216,6 +216,7 @@ export default {
       noDeviceFound: '기기를 찾을 수 없습니다',
       noWindowFound: '창을 찾을 수 없습니다',
       connectFailed: '자동 연결에 실패했습니다',
+      retryConnect: '연결 실패, {{attempt}}번째 재시도...',
       autoSelectedDevice:
         '기기가 설정되지 않아 「{{name}}」을(를) 자동으로 선택했습니다. 변경하려면 연결 설정에서 수동으로 선택하세요. 다음 번에는 선택 내용이 저장됩니다.',
       autoSelectedWindow:

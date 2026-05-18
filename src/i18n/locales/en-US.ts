@@ -223,6 +223,7 @@ export default {
       noDeviceFound: 'No devices found',
       noWindowFound: 'No windows found',
       connectFailed: 'Auto connect failed',
+      retryConnect: 'Connection failed, retry {{attempt}}...',
       autoSelectedDevice:
         'No device was previously selected. Automatically matched "{{name}}". To change, select manually in Connection Settings — your choice will be remembered next time.',
       autoSelectedWindow:
