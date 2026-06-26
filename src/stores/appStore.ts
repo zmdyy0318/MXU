@@ -26,6 +26,7 @@ import type {
   OptionDefinition,
   OptionValue,
   ProjectInterface,
+  SchedulePolicy,
   SelectedTask,
 } from '@/types/interface';
 import type { ConnectionStatus, TaskStatus } from '@/types/maa';
@@ -59,6 +60,25 @@ import {
 import { persistRuntimeLogs } from '@/utils/runtimeLogPersistence';
 // 从独立模块导入类型和辅助函数
 import type { AppState, LogEntry, TaskRunStatus } from './types';
+
+/** 向后兼容：将旧版整点小时 hours 迁移为 times ("HH:mm") */
+function migrateSchedulePolicies(inst: {
+  schedulePolicies?: SchedulePolicy[];
+}): SchedulePolicy[] | undefined {
+  if (!inst.schedulePolicies) return undefined;
+  return inst.schedulePolicies.map((policy) => {
+    if (policy.times) {
+      // 已是新格式，丢弃可能残留的 hours 字段
+      const { hours: _legacyHours, ...rest } = policy;
+      return rest;
+    }
+    const times = (policy.hours ?? [])
+      .map((h) => `${String(h).padStart(2, '0')}:00`)
+      .sort((a, b) => a.localeCompare(b));
+    const { hours: _legacyHours, ...rest } = policy;
+    return { ...rest, times };
+  });
+}
 
 /** 向后兼容：将旧版单个 preAction 迁移为 preActions 数组 */
 function migratePreActions(inst: {
@@ -1074,7 +1094,7 @@ export const useAppStore = create<AppState>()(
           savedDevice: inst.savedDevice,
           selectedTasks: savedTasks,
           isRunning: prevRunningByInstance.get(inst.id) ?? false,
-          schedulePolicies: inst.schedulePolicies,
+          schedulePolicies: migrateSchedulePolicies(inst),
           preActions: migratePreActions(inst),
         };
       });
@@ -1786,7 +1806,7 @@ export const useAppStore = create<AppState>()(
           expanded: false,
         })),
         isRunning: false,
-        schedulePolicies: closedInstance.schedulePolicies,
+        schedulePolicies: migrateSchedulePolicies(closedInstance),
         preActions: migratePreActions(closedInstance),
       };
 

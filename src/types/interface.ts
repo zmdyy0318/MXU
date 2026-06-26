@@ -252,7 +252,9 @@ export interface SchedulePolicy {
   name: string; // 策略名称
   enabled: boolean; // 是否启用
   weekdays: number[]; // 重复日期 (0-6, 0=周日)
-  hours: number[]; // 开始时间 (0-23)
+  times: string[]; // 开始时间点 ("HH:mm"，已排序去重)
+  /** @deprecated 旧版整点小时字段 (0-23)，仅用于读取旧配置迁移为 times */
+  hours?: number[];
 }
 
 // pre-action config
