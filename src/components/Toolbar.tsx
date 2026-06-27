@@ -15,7 +15,7 @@ import { isTaskCompatible } from '@/stores/helpers';
 import { maaService } from '@/services/maaService';
 import clsx from 'clsx';
 import { loggers, generateTaskPipelineOverride, computeResourcePaths } from '@/utils';
-import { getMxuSpecialTask } from '@/types/specialTasks';
+import { getMxuSpecialTask, shouldSkipMxuScreenshot } from '@/types/specialTasks';
 import type { TaskConfig, ControllerConfig } from '@/types/maa';
 import { normalizeAgentConfigs } from '@/types/interface';
 import { parseWin32ScreencapMethod, parseWin32InputMethod } from '@/types/maa';
@@ -317,6 +317,14 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
           savedDevice.wlrSocketPath ||
           savedDevice.playcoverAddress),
       );
+      const hasVisualTasks = compatibleTasks.some((task) => !shouldSkipMxuScreenshot(task.taskName));
+      const shouldUseDummyController = !hasVisualTasks;
+
+      if (shouldUseDummyController) {
+        log.info(`实例 ${targetInstance.name}: 仅包含非视觉特殊任务，跳过截图/识别流程`);
+      }
+
+      const canUseSavedDevice = hasSavedDevice && savedDevice && !shouldUseDummyController;
 
       let isTargetConnected = instanceConnectionStatus[targetId] === 'Connected';
       const isTargetResourceLoaded = instanceResourceLoaded[targetId] || false;
@@ -325,7 +333,8 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
       const canStartTask =
         (isTargetConnected && isTargetResourceLoaded) ||
         (hasSavedDevice && resource) ||
-        (controller && resource);
+        (controller && resource) ||
+        (shouldUseDummyController && resource);
 
       if (!canStartTask) {
         log.warn(`实例 ${targetInstance.name} 无法启动：未连接且没有可用的控制器或资源配置`);
@@ -560,7 +569,7 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
         }
 
         // 查询后端真实连接状态，纠正前端可能过时的缓存
-        if (isTargetConnected && !needsReconnect) {
+        if (isTargetConnected && !needsReconnect && !shouldUseDummyController) {
           const backendState = await maaService.getInstanceState(targetId);
           if (!backendState || backendState.connectionStatus !== 'Connected') {
             log.warn(
@@ -572,8 +581,8 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
         }
 
         // 如果未连接（或需要重连），尝试自动连接
-        if ((!isTargetConnected || needsReconnect) && controller) {
-          const controllerType = controller.type;
+        if (!isTargetConnected || needsReconnect || shouldUseDummyController) {
+          const controllerType = controller?.type;
 
           await ensureMaaInitialized();
           await maaService.createInstance(targetId).catch((err) => {
@@ -584,7 +593,7 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
           let deviceName = '';
           let targetType: 'device' | 'window' = 'device';
 
-          if (hasSavedDevice && savedDevice) {
+          if (canUseSavedDevice && savedDevice && controllerType) {
             // 有保存的设备配置，按名称精确匹配
             log.info(`实例 ${targetInstance.name}: 自动连接已保存的设备...`);
             onPhaseChange?.('searching');
@@ -662,7 +671,7 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
               deviceName = savedDevice.playcoverAddress;
               targetType = 'device';
             }
-          } else {
+          } else if (!shouldUseDummyController && controllerType) {
             // 没有保存的设备配置，自动搜索并连接第一个结果
             log.info(`实例 ${targetInstance.name}: 自动搜索设备并连接...`);
             onPhaseChange?.('searching');
@@ -773,9 +782,19 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
             }
           }
 
-          if (!config) {
+          if (!shouldUseDummyController && !config) {
             log.warn(`实例 ${targetInstance.name}: 无法构建控制器配置`);
             return false;
+          }
+
+          if (shouldUseDummyController) {
+            config = {
+              type: 'Dummy',
+              display_short_side: controller?.display_short_side,
+            };
+            deviceName = 'MXU Dummy Controller';
+            targetType = 'device';
+            log.info(`实例 ${targetInstance.name}: 使用 Dummy Controller 执行非视觉任务`);
           }
 
           onPhaseChange?.('connecting');

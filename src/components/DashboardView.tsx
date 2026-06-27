@@ -32,7 +32,7 @@ import { loggers, generateTaskPipelineOverride } from '@/utils';
 import type { TaskConfig } from '@/types/maa';
 import { normalizeAgentConfigs } from '@/types/interface';
 import { getInterfaceLangKey } from '@/i18n';
-import { getMxuSpecialTask } from '@/types/specialTasks';
+import { getMxuSpecialTask, shouldSkipMxuScreenshot } from '@/types/specialTasks';
 import { startGlobalCallbackListener } from '@/components/connection/callbackCache';
 import { stopInstanceTasks } from '@/services/taskStopService';
 import { buildPiEnvVars } from '@/utils/piEnv';
@@ -245,6 +245,11 @@ function InstanceCard({ instanceId, instanceName, isActive, onSelect }: Instance
                 : resolveI18nText(taskDef.label, translations)) ||
               selectedTask.taskName;
             registerEntryTaskName(taskDef.entry, taskDisplayName);
+          }
+
+          const needsDummyController = enabledTasks.every((task) => shouldSkipMxuScreenshot(task.taskName));
+          if (needsDummyController) {
+            log.info(`[${instanceName}] 仅包含非视觉特殊任务，跳过截图/识别流程`);
           }
 
           if (taskConfigs.length === 0) {
