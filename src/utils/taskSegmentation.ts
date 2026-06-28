@@ -51,4 +51,29 @@ export function needsSegmentedRun(segments: ThreeSegmentSplit<unknown>): boolean
   return hasSpecialSegments(segments);
 }
 
+export type MxuTaskSegmentKind = 'leading' | 'middle' | 'trailing';
+
+export interface MxuTaskExecutionSegment<T> {
+  kind: MxuTaskSegmentKind;
+  tasks: T[];
+  useDummyController: boolean;
+}
+
+/**
+ * 将任务列表分组为可执行批次：
+ * - leading：队首特殊任务，使用 Dummy Controller
+ * - middle：中间游戏段，使用当前游戏控制器
+ * - trailing：队尾特殊任务，使用 Dummy Controller
+ */
+export function getMxuTaskExecutionSegments<T extends { taskName: string }>(
+  tasks: T[],
+): MxuTaskExecutionSegment<T>[] {
+  const { leading, middle, trailing } = splitTasksIntoThreeSegments(tasks);
+  return [
+    { kind: 'leading' as const, tasks: leading, useDummyController: true },
+    { kind: 'middle' as const, tasks: middle, useDummyController: false },
+    { kind: 'trailing' as const, tasks: trailing, useDummyController: true },
+  ].filter((segment) => segment.tasks.length > 0);
+}
+
 export type { SelectedTask };
