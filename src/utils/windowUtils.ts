@@ -13,11 +13,65 @@ export const MIN_WINDOW_HEIGHT = 500;
 // 左侧面板最小宽度（确保工具栏按钮文字不换行）
 export const MIN_LEFT_PANEL_WIDTH = 530;
 
+// 全局 UI 缩放范围（按窗口 DPI 自动调整）
+export const MIN_UI_SCALE = 1;
+export const MAX_UI_SCALE = 2;
+const DEFAULT_UI_SCALE = 1;
+let currentUiScale = DEFAULT_UI_SCALE;
+
 /**
  * 验证窗口尺寸是否有效
  */
 export function isValidWindowSize(width: number, height: number): boolean {
   return width >= MIN_WINDOW_WIDTH && height >= MIN_WINDOW_HEIGHT;
+}
+
+/**
+ * 将 UI 缩放值限制在安全范围内
+ */
+export function clampUiScale(scale: number): number {
+  if (!Number.isFinite(scale)) return DEFAULT_UI_SCALE;
+  return Math.max(MIN_UI_SCALE, Math.min(MAX_UI_SCALE, scale));
+}
+
+/**
+ * 应用全局 UI 缩放到根节点
+ */
+export function setUiScale(scale: number): number {
+  const clamped = clampUiScale(scale);
+  currentUiScale = clamped;
+
+  if (typeof document !== 'undefined') {
+    document.documentElement.style.setProperty('--mxu-ui-scale', String(clamped));
+  }
+
+  return clamped;
+}
+
+/**
+ * 获取当前 UI 缩放值
+ */
+export function getUiScale(): number {
+  return currentUiScale;
+}
+
+/**
+ * 从当前窗口或浏览器环境同步 UI 缩放
+ */
+export async function syncUiScale(): Promise<number> {
+  if (isTauri()) {
+    try {
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      const currentWindow = getCurrentWindow();
+      const scaleFactor = await currentWindow.scaleFactor();
+      return setUiScale(scaleFactor);
+    } catch (err) {
+      log.warn('同步 UI 缩放失败，回退到默认值:', err);
+      return setUiScale(DEFAULT_UI_SCALE);
+    }
+  }
+
+  return setUiScale(window.devicePixelRatio || DEFAULT_UI_SCALE);
 }
 
 /**
@@ -112,6 +166,23 @@ export async function getWindowSize(): Promise<{ width: number; height: number }
     }
   }
   return null;
+}
+
+/**
+ * 获取当前窗口 DPI 缩放因子
+ */
+export async function getWindowScaleFactor(): Promise<number> {
+  if (isTauri()) {
+    try {
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      const currentWindow = getCurrentWindow();
+      return await currentWindow.scaleFactor();
+    } catch (err) {
+      log.warn('获取窗口缩放因子失败:', err);
+    }
+  }
+
+  return window.devicePixelRatio || 1;
 }
 
 /**

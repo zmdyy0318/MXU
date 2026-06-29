@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import {
   useAppStore,
   flushConfig,
@@ -78,6 +78,7 @@ import {
   focusWindow,
   showWindow,
   MIN_LEFT_PANEL_WIDTH,
+  syncUiScale,
 } from '@/utils/windowUtils';
 import { LoadingScreen } from './components/app';
 import { ConnectionLostOverlay } from './components/app/ConnectionLostOverlay';
@@ -1271,6 +1272,40 @@ function App() {
       mediaQuery.removeEventListener('change', handleSystemThemeChange);
     };
   }, [theme]);
+
+  // 监听页面缩放变化，自动适配 4K / 高 DPI 显示器
+  useLayoutEffect(() => {
+    let cleanup: (() => void) | null = null;
+    let cancelled = false;
+
+    const setupUiScaleListener = async () => {
+      const initialScale = await syncUiScale();
+      if (cancelled) return;
+      log.info('UI 缩放已同步:', initialScale);
+
+      if (!isTauri()) return;
+
+      try {
+        const { getCurrentWindow } = await import('@tauri-apps/api/window');
+        const currentWindow = getCurrentWindow();
+        cleanup = await currentWindow.onScaleChanged(async (event) => {
+          if (cancelled) return;
+          const nextScale = event.payload.scaleFactor;
+          const appliedScale = await syncUiScale();
+          log.info('窗口 DPI 缩放变化:', { nextScale, appliedScale });
+        });
+      } catch (err) {
+        log.warn('注册窗口缩放监听失败:', err);
+      }
+    };
+
+    void setupUiScaleListener();
+
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, []);
 
   // 回到主界面时，根据状态弹出相应的弹窗
   useEffect(() => {
