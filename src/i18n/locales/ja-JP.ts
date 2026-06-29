@@ -336,6 +336,7 @@ export default {
     taskCount: 'タスク',
     skipToManual: 'スキップして手動でタスクを追加',
     importConfig: 'クリップボードから設定をインポート',
+    importConfigFromFile: 'ファイルから設定をインポート',
     importSuccess: '設定のインポートに成功しました',
     importFailed: 'インポート失敗：無効な形式',
     importProjectMismatch: 'インポート失敗：プロジェクトが一致しません',
@@ -343,6 +344,8 @@ export default {
       'インポート失敗：この設定はより新しいバージョンの{{projectName}}でエクスポートされました。{{projectName}}を更新してから再試行してください',
     exportSuccess: '設定をクリップボードにコピーしました',
     exportFailed: 'エクスポート失敗：クリップボードに書き込めません',
+    exportFileSuccess: '設定を txt ファイルとしてエクスポートしました',
+    exportFileFailed: 'エクスポート失敗：ファイルに書き込めません',
     exportShareHint: '{{projectName}} の「{{tabName}}」設定をシェアするよ～',
     exportShareFooter:
       '👆 このメッセージをコピーして、{{projectName}} で新しいタブを開き「設定をインポート」を押すだけでOK',
@@ -536,6 +539,9 @@ export default {
     tcpCompatMode: '通信互換モード',
     tcpCompatModeHint:
       'タスク開始後にアプリがすぐにクラッシュする場合は有効にしてください。この場合のみ使用し、それ以外は性能に影響します',
+      webServerEnabled: 'Web サーバーを有効化',
+      webServerEnabledHint:
+          '無効にすると内蔵 Web サーバーは起動しません（再起動後に反映）',
     webServerPort: 'Web サーバーポート',
     webServerPortHint:
       'Web サーバーのリッスンポートをカスタマイズ（デフォルト 12701、再起動後に反映）',
@@ -711,13 +717,11 @@ export default {
     repeatDays: '繰り返し日',
     startTime: '開始時刻',
     selectDays: '日を選択...',
-    selectHours: '時刻を選択...',
+    addTime: '時刻を追加',
     noWeekdays: '日が選択されていません',
-    noHours: '時刻が選択されていません',
+    noTimes: '時刻が選択されていません',
     everyday: '毎日',
-    everyHour: '毎時',
-    all: 'すべて',
-    hoursSelected: '件の時刻',
+    timesSelected: '件の時刻',
     timeZoneHint: 'ローカルタイムゾーンを使用',
     multiSelect: '複数選択可',
     enable: 'スケジュールを有効化',
@@ -758,6 +762,11 @@ export default {
     closeAllTabs: 'すべてのタブを閉じる',
     closeTabsToRight: '右側のタブを閉じる',
     exportConfig: '設定をエクスポート',
+    exportToClipboard: 'クリップボードへエクスポート',
+    exportToTxt: 'txt ファイルとしてエクスポート',
+    importConfig: '設定をインポート',
+    importFromClipboard: 'クリップボードからインポート',
+    importFromTxt: 'txt ファイルからインポート',
 
     // 前処理プログラムのコンテキストメニュー
     duplicateAction: '複製',

@@ -5,10 +5,7 @@
 mod webview2;
 
 fn main() {
-    if mxu_lib::commands::system::has_help_flag() {
-        mxu_lib::commands::system::print_cli_help_text();
-        std::process::exit(0);
-    }
+    let _cli = mxu_lib::commands::system::init_cli();
 
     #[cfg(target_os = "windows")]
     {
@@ -35,7 +32,6 @@ fn main() {
                 }
             }
         }
-
         // 已有本地运行时时跳过检测，否则检测系统安装或自动下载
         if std::env::var_os("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER").is_none()
             && !webview2::ensure_webview2()
