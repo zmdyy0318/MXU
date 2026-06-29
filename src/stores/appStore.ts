@@ -1211,7 +1211,6 @@ export const useAppStore = create<AppState>()(
         autoRunOnLaunch: config.settings.autoRunOnLaunch ?? false,
         autoStartRemovedInstanceName: config.settings.autoStartRemovedInstanceName,
         minimizeToTray: config.settings.minimizeToTray ?? false,
-        hideMainWindowOnLaunch: config.settings.hideMainWindowOnLaunch ?? false,
         onboardingCompleted: config.settings.onboardingCompleted ?? false,
         preActionConnectDelaySec: config.settings.preActionConnectDelaySec ?? 5,
         hotkeys: config.settings.hotkeys ?? {
@@ -1707,10 +1706,6 @@ export const useAppStore = create<AppState>()(
       }
     },
 
-    // 启动设置
-    hideMainWindowOnLaunch: false,
-    setHideMainWindowOnLaunch: (enabled) => set({ hideMainWindowOnLaunch: enabled }),
-
     // 新用户引导
     onboardingCompleted: false,
     setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
@@ -2094,7 +2089,6 @@ function generateConfig(): MxuConfig {
           autoRunOnLaunch: state.autoRunOnLaunch,
           autoStartRemovedInstanceName: state.autoStartRemovedInstanceName,
           minimizeToTray: state.minimizeToTray,
-          hideMainWindowOnLaunch: state.hideMainWindowOnLaunch,
           onboardingCompleted: state.onboardingCompleted,
           preActionConnectDelaySec: state.preActionConnectDelaySec,
           hotkeys: state.hotkeys,
@@ -2167,7 +2161,6 @@ useAppStore.subscribe(
     autoRunOnLaunch: state.autoRunOnLaunch,
     autoStartRemovedInstanceName: state.autoStartRemovedInstanceName,
     minimizeToTray: state.minimizeToTray,
-    hideMainWindowOnLaunch: state.hideMainWindowOnLaunch,
     onboardingCompleted: state.onboardingCompleted,
     hotkeys: state.hotkeys,
     recentlyClosed: state.recentlyClosed,

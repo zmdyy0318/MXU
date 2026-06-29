@@ -169,7 +169,6 @@ function App() {
     setDataPath,
     setConfigPersistenceReady,
     basePath,
-    hideMainWindowOnLaunch,
     importConfig,
     createInstance,
     theme,
@@ -211,7 +210,6 @@ function App() {
       setDataPath: state.setDataPath,
       setConfigPersistenceReady: state.setConfigPersistenceReady,
       basePath: state.basePath,
-      hideMainWindowOnLaunch: state.hideMainWindowOnLaunch,
       importConfig: state.importConfig,
       createInstance: state.createInstance,
       theme: state.theme,
@@ -647,17 +645,28 @@ function App() {
         }
       }
 
-      // 主题已应用、窗口已定位，按启动设置决定是否显示窗口
-      if (!hideMainWindowOnLaunch) {
+      // 主题已应用、窗口已定位，检查是否为自启动；自启动时默认保持隐藏
+      let isAutoStart = false;
+      if (isTauri()) {
+        try {
+          isAutoStart = await invoke<boolean>('is_autostart');
+          if (isAutoStart) {
+            useAppStore.getState().setIsAutoStartMode(true);
+          }
+        } catch (err) {
+          log.warn('检查开机自启动状态失败:', err);
+        }
+      }
+
+      if (!isAutoStart) {
         showWindow();
       } else if (isTauri()) {
         try {
           const { getCurrentWindow } = await import('@tauri-apps/api/window');
-          const currentWindow = getCurrentWindow();
-          await currentWindow.hide();
-          log.info('已按设置在启动时隐藏主窗口');
+          await getCurrentWindow().hide();
+          log.info('自启动模式：启动时保持主窗口隐藏');
         } catch (err) {
-          log.warn('启动时隐藏主窗口失败:', err);
+          log.warn('自启动时隐藏主窗口失败:', err);
         }
       }
 

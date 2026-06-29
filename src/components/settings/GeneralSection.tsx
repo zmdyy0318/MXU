@@ -30,8 +30,6 @@ export function GeneralSection() {
     setConfirmBeforeDelete,
     minimizeToTray,
     setMinimizeToTray,
-    hideMainWindowOnLaunch,
-    setHideMainWindowOnLaunch,
     setRightPanelWidth,
     setRightPanelCollapsed,
     setAddTaskPanelHeight,
@@ -270,30 +268,7 @@ export function GeneralSection() {
         </div>
       </DesktopOnlyWrapper>
 
-      {/* ④ 启动时隐藏主窗口 */}
-      <DesktopOnlyWrapper>
-        <div className="bg-bg-secondary rounded-xl p-4 border border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <AppWindowMac className="w-5 h-5 text-accent" />
-              <div>
-                <span className="font-medium text-text-primary">
-                  {t('settings.hideMainWindowOnLaunch')}
-                </span>
-                <p className="text-xs text-text-muted mt-0.5">
-                  {t('settings.hideMainWindowOnLaunchHint')}
-                </p>
-              </div>
-            </div>
-            <SwitchButton
-              value={hideMainWindowOnLaunch}
-              onChange={(v) => setHideMainWindowOnLaunch(v)}
-            />
-          </div>
-        </div>
-      </DesktopOnlyWrapper>
-
-      {/* ⑤ 最小化到托盘 */}
+      {/* ④ 最小化到托盘 */}
       <DesktopOnlyWrapper>
         <div className="bg-bg-secondary rounded-xl p-4 border border-border">
           <div className="flex items-center justify-between">
