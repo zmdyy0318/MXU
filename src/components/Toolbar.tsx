@@ -246,14 +246,14 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
       }
 
       // 获取控制器和资源配置
-        const controllerName = selectedController[targetId] || projectInterface?.controller[0]?.name;
-        const resourceName = selectedResource[targetId] || projectInterface?.resource[0]?.name;
+      const controllerName = selectedController[targetId] || projectInterface?.controller[0]?.name;
+      const resourceName = selectedResource[targetId] || projectInterface?.resource[0]?.name;
 
-        // 过滤掉不兼容当前控制器/资源的任务
-        const compatibleTasks = enabledTasks.filter((t) => {
-          const taskDef = projectInterface?.task.find((td) => td.name === t.taskName);
-          return isTaskCompatible(taskDef, controllerName, resourceName);
-        });
+      // 过滤掉不兼容当前控制器/资源的任务
+      const compatibleTasks = enabledTasks.filter((t) => {
+        const taskDef = projectInterface?.task.find((td) => td.name === t.taskName);
+        return isTaskCompatible(taskDef, controllerName, resourceName);
+      });
 
       // 如果有任务因不兼容被跳过，记录警告
       const compatibleTaskIds = new Set(compatibleTasks.map((t) => t.id));
