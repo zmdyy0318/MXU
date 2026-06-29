@@ -245,8 +245,7 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
         return false;
       }
 
-      try {
-        // 获取控制器和资源配置
+      // 获取控制器和资源配置
         const controllerName = selectedController[targetId] || projectInterface?.controller[0]?.name;
         const resourceName = selectedResource[targetId] || projectInterface?.resource[0]?.name;
 
