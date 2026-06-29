@@ -645,8 +645,30 @@ function App() {
         }
       }
 
-      // 主题已应用、窗口已定位，显示窗口
-      showWindow();
+      // 主题已应用、窗口已定位，检查是否为自启动；自启动时默认保持隐藏
+      let isAutoStart = false;
+      if (isTauri()) {
+        try {
+          isAutoStart = await invoke<boolean>('is_autostart');
+          if (isAutoStart) {
+            useAppStore.getState().setIsAutoStartMode(true);
+          }
+        } catch (err) {
+          log.warn('检查开机自启动状态失败:', err);
+        }
+      }
+
+      if (!isAutoStart) {
+        showWindow();
+      } else if (isTauri()) {
+        try {
+          const { getCurrentWindow } = await import('@tauri-apps/api/window');
+          await getCurrentWindow().hide();
+          log.info('自启动模式：启动时保持主窗口隐藏');
+        } catch (err) {
+          log.warn('自启动时隐藏主窗口失败:', err);
+        }
+      }
 
       // 从后端恢复 MAA 运行时状态（连接状态、资源加载状态、设备缓存等）
       try {
@@ -1057,7 +1079,7 @@ function App() {
             log.warn('检测到程序路径问题:', pathIssue);
             setBadPathType(pathIssue as BadPathType);
             setShowBadPathModal(true);
-            // 路径有问题就不继续加载了，但仍需显示窗口
+            // 路径有问题就不继续加载了，但仍需显示窗口以呈现错误界面
             showWindow();
             return;
           }
