@@ -6,12 +6,11 @@ use super::types::MaaState;
 use super::types::SystemInfo;
 use super::types::WebView2DirInfo;
 use super::utils::get_maafw_dir;
-use clap::Parser;
 use log::info;
 #[cfg(windows)]
 use log::warn;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 use std::time::Duration;
 use tauri::State;
 use tokio::time::sleep;
@@ -27,42 +26,36 @@ pub fn set_vcredist_missing(missing: bool) {
     VCREDIST_MISSING.store(missing, Ordering::SeqCst);
 }
 
-static HOST_ARCH: OnceLock<String> = OnceLock::new();
-
 /// 获取宿主机架构（macOS 上优先识别真实硬件架构，避免 Rosetta 误判）
 fn detect_host_arch() -> String {
-    HOST_ARCH
-        .get_or_init(|| {
-            #[cfg(target_os = "macos")]
+    #[cfg(target_os = "macos")]
+    {
+        use std::ffi::CString;
+        use std::ptr;
+
+        unsafe {
+            let name = CString::new("hw.optional.arm64").expect("valid sysctl name");
+            let mut value: libc::c_int = 0;
+            let mut size = std::mem::size_of::<libc::c_int>() as libc::size_t;
+
+            if libc::sysctlbyname(
+                name.as_ptr(),
+                &mut value as *mut _ as *mut libc::c_void,
+                &mut size,
+                ptr::null_mut(),
+                0,
+            ) == 0
             {
-                use std::ffi::CString;
-                use std::ptr;
-
-                unsafe {
-                    let name = CString::new("hw.optional.arm64").expect("valid sysctl name");
-                    let mut value: libc::c_int = 0;
-                    let mut size = std::mem::size_of::<libc::c_int>() as libc::size_t;
-
-                    if libc::sysctlbyname(
-                        name.as_ptr(),
-                        &mut value as *mut _ as *mut libc::c_void,
-                        &mut size,
-                        ptr::null_mut(),
-                        0,
-                    ) == 0
-                    {
-                        return if value == 1 {
-                            "arm64".to_string()
-                        } else {
-                            "x86_64".to_string()
-                        };
-                    }
-                }
+                return if value == 1 {
+                    "arm64".to_string()
+                } else {
+                    "x86_64".to_string()
+                };
             }
+        }
+    }
 
-            std::env::consts::ARCH.to_string()
-        })
-        .clone()
+    std::env::consts::ARCH.to_string()
 }
 
 /// 检查当前进程是否以管理员权限运行

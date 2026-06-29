@@ -48,7 +48,6 @@ os_info = "3"
 urlencoding = "2.1"
 notify-rust = "4"
 shell-words = "1.1.1"
-clap = { version = "4", features = ["derive"] }
 maa-framework = { version = "1", features = ["dynamic"] }
 rust-embed = "8"
 
