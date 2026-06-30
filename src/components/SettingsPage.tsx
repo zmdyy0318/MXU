@@ -274,7 +274,7 @@ export function SettingsPage({ onClose }: SettingsPageProps) {
       resolvedDescription: resolveSettingsText(section.description, undefined, langMap),
       resolvedIcon: section.icon,
     }));
-  }, [projectInterface?.settings, interfaceTranslations, langKey]);
+  }, [projectInterface?.setting, interfaceTranslations, langKey]);
 
   // 目录索引配置
   const tocItems = useMemo(() => {
