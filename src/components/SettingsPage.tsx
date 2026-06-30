@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   LayoutGrid,
+  ChevronRight,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -78,6 +79,7 @@ function OptionDefinitionPreview({
   optionDef: OptionDefinition;
   basePath: string;
 }) {
+  const { t } = useTranslation();
   const iconUrl = useResolvedIcon(optionDef.icon, basePath);
 
   return (
@@ -93,7 +95,7 @@ function OptionDefinitionPreview({
           {optionDef.description.startsWith('$') ? optionDef.description.slice(1) : optionDef.description}
         </div>
       )}
-      <div className="text-xs text-text-muted">{optionDef.type}</div>
+      <div className="text-xs text-text-muted">{t('settings.taskSettingsPreview')}</div>
     </div>
   );
 }
@@ -107,6 +109,7 @@ function TaskSettingsSection({
   projectInterface: ProjectInterface | null;
   basePath: string;
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(section.default_expand ?? true);
   const optionKeys = section.option || [];
   const availableOptionKeys = optionKeys.filter((key) => !!projectInterface?.option?.[key]);
