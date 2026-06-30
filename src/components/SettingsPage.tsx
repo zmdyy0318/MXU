@@ -52,7 +52,7 @@ function resolveSettingsText(
   return translations[key] || key;
 }
 
-function useResolvedIcon(icon?: string, basePath: string): string | undefined {
+function useResolvedIcon(basePath: string, icon?: string): string | undefined {
   const [iconUrl, setIconUrl] = useState<string | undefined>();
 
   useEffect(() => {
@@ -80,7 +80,7 @@ function OptionDefinitionPreview({
   basePath: string;
 }) {
   const { t } = useTranslation();
-  const iconUrl = useResolvedIcon(optionDef.icon, basePath);
+  const iconUrl = useResolvedIcon(basePath, optionDef.icon);
 
   return (
     <div className="space-y-2">
@@ -113,7 +113,7 @@ function TaskSettingsSection({
   const [expanded, setExpanded] = useState(section.default_expand ?? true);
   const optionKeys = section.option || [];
   const availableOptionKeys = optionKeys.filter((key) => !!projectInterface?.option?.[key]);
-  const iconUrl = useResolvedIcon(section.resolvedIcon, basePath);
+  const iconUrl = useResolvedIcon(basePath, section.resolvedIcon);
 
   return (
     <details
@@ -481,7 +481,6 @@ export function SettingsPage({ onClose }: SettingsPageProps) {
                       section={section}
                       projectInterface={projectInterface}
                       basePath={basePath}
-                      langKey={langKey}
                     />
                   ))}
                 </div>
