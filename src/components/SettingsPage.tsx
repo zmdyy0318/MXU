@@ -75,26 +75,24 @@ function useResolvedIcon(basePath: string, icon?: string): string | undefined {
 function OptionDefinitionPreview({
   optionDef,
   basePath,
+  translations,
 }: {
   optionDef: OptionDefinition;
   basePath: string;
+  translations: Record<string, string>;
 }) {
   const { t } = useTranslation();
   const iconUrl = useResolvedIcon(basePath, optionDef.icon);
+  const optionLabel = resolveSettingsText(optionDef.label, optionDef.type, translations);
+  const optionDescription = resolveSettingsText(optionDef.description, undefined, translations);
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         {iconUrl ? <img src={iconUrl} alt="" className="w-4 h-4 object-contain" /> : null}
-        <span className="text-sm font-medium text-text-primary">
-          {optionDef.label?.startsWith('$') ? optionDef.label.slice(1) : optionDef.label || optionDef.type}
-        </span>
+        <span className="text-sm font-medium text-text-primary">{optionLabel}</span>
       </div>
-      {optionDef.description && (
-        <div className="text-xs text-text-secondary">
-          {optionDef.description.startsWith('$') ? optionDef.description.slice(1) : optionDef.description}
-        </div>
-      )}
+      {optionDescription && <div className="text-xs text-text-secondary">{optionDescription}</div>}
       <div className="text-xs text-text-muted">{t('settings.taskSettingsPreview')}</div>
     </div>
   );
@@ -104,10 +102,12 @@ function TaskSettingsSection({
   section,
   projectInterface,
   basePath,
+  translations,
 }: {
   section: RenderSettingsSection;
   projectInterface: ProjectInterface | null;
   basePath: string;
+  translations: Record<string, string>;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(section.default_expand ?? true);
@@ -152,7 +152,7 @@ function TaskSettingsSection({
             if (!optionDef) return null;
             return (
               <div key={optionKey} className="rounded-lg border border-border/60 bg-bg-primary/60 p-3">
-                <OptionDefinitionPreview optionDef={optionDef} basePath={basePath} />
+                <OptionDefinitionPreview optionDef={optionDef} basePath={basePath} translations={translations} />
               </div>
             );
           })
@@ -481,6 +481,7 @@ export function SettingsPage({ onClose }: SettingsPageProps) {
                       section={section}
                       projectInterface={projectInterface}
                       basePath={basePath}
+                      translations={interfaceTranslations[langKey] || {}}
                     />
                   ))}
                 </div>
