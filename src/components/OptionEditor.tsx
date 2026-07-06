@@ -8,7 +8,7 @@ import clsx from 'clsx';
 import { Info, AlertCircle, Loader2, FileText, Link, ChevronDown, Check } from 'lucide-react';
 import { getInterfaceLangKey } from '@/i18n';
 import { findSwitchCase } from '@/utils/optionHelpers';
-import { SwitchButton, TextInput, FileInput, TimeInput } from './FormControls';
+import { SwitchButton, TextInput, FileInput, TimeInput, HotkeyInput } from './FormControls';
 import { Tooltip } from './ui/Tooltip';
 
 /** 判断 switch 类型的选项是否有子选项 */
@@ -201,6 +201,7 @@ function InputField({
   basePath,
   disabled,
   isMxuOption = false,
+  isHotkey = false,
   t,
 }: {
   input: InputItem;
@@ -211,6 +212,7 @@ function InputField({
   basePath: string;
   disabled?: boolean;
   isMxuOption?: boolean;
+  isHotkey?: boolean;
   t?: (key: string) => string;
 }) {
   // 对于 MXU 内置选项，使用 t() 翻译
@@ -269,7 +271,15 @@ function InputField({
             </Tooltip>
           )}
         </div>
-        {input.input_type === 'file' ? (
+        {isHotkey ? (
+          <HotkeyInput
+            value={value}
+            onChange={onChange}
+            placeholder={inputPlaceholder}
+            disabled={disabled}
+            className="min-w-[min(12rem,100%)] flex-1 basis-[30%]"
+          />
+        ) : input.input_type === 'file' ? (
           <FileInput
             value={value}
             onChange={onChange}
@@ -572,9 +582,13 @@ export function OptionEditor({
     );
   }
 
-  // Input 类型
-  if (optionDef.type === 'input') {
-    const inputValues = effectiveValue?.type === 'input' ? effectiveValue.values : {};
+  // Input / Hotkey 类型
+  if (optionDef.type === 'input' || optionDef.type === 'hotkey') {
+    const fields = optionDef.type === 'input' ? optionDef.inputs : optionDef.hotkeys;
+    const inputValues =
+      effectiveValue?.type === 'input' || effectiveValue?.type === 'hotkey'
+        ? effectiveValue.values
+        : {};
 
     return (
       <div
@@ -597,18 +611,20 @@ export function OptionEditor({
             translations={translations}
           />
         </div>
-        {optionDef.inputs.map((input) => {
+        {fields.map((input) => {
           const inputValue = inputValues[input.name] ?? input.default ?? '';
+          const isHotkey = optionDef.type === 'hotkey';
 
           return (
             <InputField
               key={input.name}
               input={input}
               value={inputValue}
+              isHotkey={isHotkey}
               onChange={(newVal) => {
                 if (effectiveDisabled) return;
                 commitOptionValue({
-                  type: 'input',
+                  type: isHotkey ? 'hotkey' : 'input',
                   values: { ...inputValues, [input.name]: newVal },
                 });
               }}

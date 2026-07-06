@@ -326,6 +326,8 @@ export default {
     noMatchingOptions: '无匹配选项',
     incompatibleController: '不支持当前控制器',
     incompatibleResource: '不支持当前资源包',
+    hotkeyPlaceholder: '点击录入快捷键',
+    hotkeyCapturing: '按下快捷键...',
   },
 
   // 预设配置

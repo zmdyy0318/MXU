@@ -327,6 +327,8 @@ export default {
     noMatchingOptions: '일치하는 옵션 없음',
     incompatibleController: '현재 컨트롤러에서 지원되지 않음',
     incompatibleResource: '현재 리소스 팩에서 지원되지 않음',
+    hotkeyPlaceholder: '클릭하여 단축키 입력',
+    hotkeyCapturing: '키를 누르세요...',
   },
 
   // 프리셋

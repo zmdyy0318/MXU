@@ -12,7 +12,7 @@ import { ContextMenu, useContextMenu } from './ContextMenu';
 import { Tooltip } from './ui/Tooltip';
 import { ConfirmDialog } from './ConfirmDialog';
 import { buildListItemMenuItems, InlineNameEditor } from './listItemShared';
-import type { SelectedTask } from '@/types/interface';
+import type { SelectedTask, CaseItem } from '@/types/interface';
 import { isMxuSpecialTask, getMxuSpecialTask, findMxuOptionByKey } from '@/types/specialTasks';
 import { getInterfaceLangKey } from '@/i18n';
 import clsx from 'clsx';
@@ -588,17 +588,15 @@ export function TaskItem({ instanceId, task }: TaskItemProps) {
           value: `${caseNames.length}/${optionDef.cases.length}`,
           type: 'checkbox',
         });
-      } else {
-        // select 类型（默认）
+      } else if (optionDef.type === 'select' || optionDef.type === undefined) {
         const caseName =
           optionValue?.type === 'select'
             ? optionValue.caseName
             : optionDef.default_case || optionDef.cases?.[0]?.name || '';
         const selectedCase =
-          optionDef.cases?.find((c) => c.name === caseName) ||
-          optionDef.cases?.find((c) => c.name === optionDef.default_case) ||
+          optionDef.cases?.find((c: CaseItem) => c.name === caseName) ||
+          optionDef.cases?.find((c: CaseItem) => c.name === optionDef.default_case) ||
           optionDef.cases?.[0];
-        // MXU 特殊任务的 case label 也需要用 t() 翻译
         const caseLabel = selectedCase
           ? isMxuOption
             ? t(selectedCase.label || selectedCase.name)

@@ -329,6 +329,8 @@ export default {
     noMatchingOptions: '一致するオプションがありません',
     incompatibleController: '現在のコントローラーに対応していません',
     incompatibleResource: '現在のリソースパックに対応していません',
+    hotkeyPlaceholder: 'クリックしてショートカットを記録',
+    hotkeyCapturing: 'キーを押してください...',
   },
 
   // プリセット

@@ -335,6 +335,8 @@ export default {
     noMatchingOptions: 'No matching options',
     incompatibleController: 'Not supported by current controller',
     incompatibleResource: 'Not supported by current resource',
+    hotkeyPlaceholder: 'Click to record shortcut',
+    hotkeyCapturing: 'Press keys...',
   },
 
   // Preset

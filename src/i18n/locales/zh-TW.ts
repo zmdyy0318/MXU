@@ -322,6 +322,8 @@ export default {
     noMatchingOptions: '無匹配選項',
     incompatibleController: '不支援目前控制器',
     incompatibleResource: '不支援目前資源包',
+    hotkeyPlaceholder: '點擊錄入快捷鍵',
+    hotkeyCapturing: '按下快捷鍵...',
   },
 
   // 預設設定

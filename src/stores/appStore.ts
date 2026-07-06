@@ -575,11 +575,15 @@ export const useAppStore = create<AppState>()(
         } else if (optionDef.type === 'checkbox') {
           const defaultCases = optionDef.default_case || [];
           optionValues[optionKey] = { type: 'checkbox', caseNames: [...defaultCases] };
-        } else {
-          // select 类型
-          const caseName =
-            (optionDef.default_case as string | undefined) || optionDef.cases?.[0]?.name || '';
+        } else if (optionDef.type === 'select') {
+          const caseName = (optionDef.default_case as string | undefined) || optionDef.cases?.[0]?.name || '';
           optionValues[optionKey] = { type: 'select', caseName };
+        } else if (optionDef.type === 'hotkey') {
+          const values: Record<string, string> = {};
+          for (const input of optionDef.hotkeys || []) {
+            values[input.name] = initialValues?.[input.name] ?? input.default ?? '';
+          }
+          optionValues[optionKey] = { type: 'hotkey', values };
         }
       }
 

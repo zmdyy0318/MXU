@@ -147,7 +147,7 @@ export interface TaskItem {
   option?: string[];
 }
 
-export type OptionType = 'select' | 'checkbox' | 'input' | 'switch';
+export type OptionType = 'select' | 'checkbox' | 'input' | 'switch' | 'hotkey';
 
 export interface CaseItem {
   name: string;
@@ -221,7 +221,19 @@ export interface InputOption {
   pipeline_override?: Record<string, unknown>;
 }
 
-export type OptionDefinition = SelectOption | CheckboxOption | SwitchOption | InputOption;
+export interface HotkeyOption {
+  type: 'hotkey';
+  label?: string;
+  description?: string;
+  icon?: string;
+  controller?: string[];
+  resource?: string[];
+  /** 热键项，支持单键或组合键捕获 */
+  hotkeys: InputItem[];
+  pipeline_override?: Record<string, unknown>;
+}
+
+export type OptionDefinition = SelectOption | CheckboxOption | SwitchOption | InputOption | HotkeyOption;
 
 // 运行时状态类型
 export interface SelectedTask {
@@ -248,6 +260,10 @@ export type OptionValue =
     }
   | {
       type: 'input';
+      values: Record<string, string>;
+    }
+  | {
+      type: 'hotkey';
       values: Record<string, string>;
     };
 
