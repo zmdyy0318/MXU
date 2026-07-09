@@ -68,7 +68,26 @@ export function buildPretaskDef(item: PretaskItem): TaskItem {
     description: item.description,
     icon: item.icon,
     option: item.option,
+    controller: item.controller,
+    resource: item.resource,
   };
+}
+
+/**
+ * 统一解析用于兼容性判断的 Task 定义：
+ * - 普通任务：从 projectInterface.task 查找
+ * - pretask 伪任务：由 pretask 条目生成虚拟 TaskItem
+ */
+export function resolveCompatTaskDef(
+  pi: ProjectInterface | null | undefined,
+  taskName: string,
+): TaskItem | undefined {
+  if (!pi) return undefined;
+  if (isPretaskName(taskName)) {
+    const item = getPretaskItem(pi, taskName);
+    return item ? buildPretaskDef(item) : undefined;
+  }
+  return pi.task.find((t) => t.name === taskName);
 }
 
 /**

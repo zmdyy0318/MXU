@@ -39,6 +39,10 @@ export interface ProjectInterface {
 export interface PretaskItem {
   /** 要执行的程序路径，可以是系统 PATH 中的可执行文件 */
   exec: string;
+  /** 💡 v2.8.1: 指定适用的控制器列表（controller.name） */
+  controller?: string[];
+  /** 💡 v2.8.1: 指定适用的资源包列表（resource.name） */
+  resource?: string[];
   /** 可选。固定参数数组，按顺序传递给 exec */
   args?: string[];
   /** 可选。唯一标识符，缺省时回退到 exec */

@@ -523,6 +523,7 @@ export function AddTaskPanel() {
           const taskName = pretaskName(item);
           const count = taskCounts[taskName] || 0;
           const label = resolveI18nText(item.label, langKey) || item.name || item.exec;
+          const { isIncompatible, reason, supportedControllerHint } = getTaskCompatibility(taskDef);
 
           return (
             <TaskButton
@@ -533,6 +534,9 @@ export function AddTaskPanel() {
               label={label}
               langKey={langKey}
               basePath={basePath}
+              disabled={isIncompatible}
+              incompatibleReason={reason}
+              supportedControllerHint={supportedControllerHint}
               onClick={() => handleAddPretask(item)}
             />
           );

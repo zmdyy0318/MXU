@@ -31,7 +31,13 @@ import type {
 } from '@/types/interface';
 import type { ConnectionStatus, TaskStatus } from '@/types/maa';
 import { getMxuSpecialTask, isMxuSpecialTask, MXU_SPECIAL_TASKS } from '@/types/specialTasks';
-import { getPretaskItems, pretaskName, isPretaskName, getPretaskItem } from '@/types/pretasks';
+import {
+  getPretaskItems,
+  pretaskName,
+  isPretaskName,
+  getPretaskItem,
+  resolveCompatTaskDef,
+} from '@/types/pretasks';
 import { decryptCdk, encryptCdk } from '@/utils/cdkCrypto';
 import { loggers } from '@/utils/logger';
 import { findSwitchCase } from '@/utils/optionHelpers';
@@ -735,7 +741,7 @@ export const useAppStore = create<AppState>()(
               selectedTasks: i.selectedTasks.map((t) => {
                 if (!enabled) return { ...t, enabled: false };
                 // 全选时不兼容的任务显式禁用
-                const taskDef = state.projectInterface?.task.find((td) => td.name === t.taskName);
+                const taskDef = resolveCompatTaskDef(state.projectInterface, t.taskName);
                 if (!isTaskCompatible(taskDef, controllerName, resourceName)) {
                   return { ...t, enabled: false };
                 }

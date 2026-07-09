@@ -34,7 +34,8 @@ import { normalizeAgentConfigs } from '@/types/interface';
 import type { PretaskItem } from '@/types/interface';
 import { getInterfaceLangKey } from '@/i18n';
 import { getMxuSpecialTask } from '@/types/specialTasks';
-import { isPretaskName, getPretaskItem, buildPretaskArgs } from '@/types/pretasks';
+import { isTaskCompatible } from '@/stores/helpers';
+import { isPretaskName, getPretaskItem, buildPretaskArgs, buildPretaskDef } from '@/types/pretasks';
 import { splitTasksIntoThreeSegments } from '@/utils/taskSegmentation';
 import { startGlobalCallbackListener } from '@/components/connection/callbackCache';
 import { stopInstanceTasks } from '@/services/taskStopService';
@@ -223,7 +224,10 @@ function InstanceCard({ instanceId, instanceName, isActive, onSelect }: Instance
           const enabledPretasks = enabledTasks
             .filter((task) => isPretaskName(task.taskName))
             .map((task) => ({ task, item: getPretaskItem(projectInterface, task.taskName) }))
-            .filter((p): p is { task: (typeof enabledTasks)[0]; item: PretaskItem } => !!p.item);
+            .filter((p): p is { task: (typeof enabledTasks)[0]; item: PretaskItem } => !!p.item)
+            .filter(({ item }) =>
+              isTaskCompatible(buildPretaskDef(item), currentControllerName, currentResourceName),
+            );
           for (const { task, item } of enabledPretasks) {
             const args = buildPretaskArgs(
               item,
