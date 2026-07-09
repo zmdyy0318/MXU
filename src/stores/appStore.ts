@@ -31,6 +31,13 @@ import type {
 } from '@/types/interface';
 import type { ConnectionStatus, TaskStatus } from '@/types/maa';
 import { getMxuSpecialTask, isMxuSpecialTask, MXU_SPECIAL_TASKS } from '@/types/specialTasks';
+import {
+  getPretaskItems,
+  pretaskName,
+  isPretaskName,
+  getPretaskItem,
+  resolveCompatTaskDef,
+} from '@/types/pretasks';
 import { decryptCdk, encryptCdk } from '@/utils/cdkCrypto';
 import { loggers } from '@/utils/logger';
 import { findSwitchCase } from '@/utils/optionHelpers';
@@ -444,7 +451,7 @@ export const useAppStore = create<AppState>()(
     },
 
     // 任务操作
-    addTaskToInstance: (instanceId, task) => {
+    addTaskToInstance: (instanceId, task, options) => {
       const pi = get().projectInterface;
       if (!pi) return;
 
@@ -467,7 +474,15 @@ export const useAppStore = create<AppState>()(
 
       set((state) => ({
         instances: state.instances.map((i) =>
-          i.id === instanceId ? { ...i, selectedTasks: [...i.selectedTasks, newTask] } : i,
+          i.id === instanceId
+            ? {
+                ...i,
+                // prepend: pretask 等前置任务固定置于列表顶部
+                selectedTasks: options?.prepend
+                  ? [newTask, ...i.selectedTasks]
+                  : [...i.selectedTasks, newTask],
+              }
+            : i,
         ),
         lastAddedTaskId: newTask.id, // 记录最近添加的任务 ID
         animatingTaskIds: [...state.animatingTaskIds, newTask.id], // 加入动画列表
@@ -772,7 +787,7 @@ export const useAppStore = create<AppState>()(
               selectedTasks: i.selectedTasks.map((t) => {
                 if (!enabled) return { ...t, enabled: false };
                 // 全选时不兼容的任务显式禁用
-                const taskDef = state.projectInterface?.task.find((td) => td.name === t.taskName);
+                const taskDef = resolveCompatTaskDef(state.projectInterface, t.taskName);
                 if (!isTaskCompatible(taskDef, controllerName, resourceName)) {
                   return { ...t, enabled: false };
                 }
@@ -1072,10 +1087,11 @@ export const useAppStore = create<AppState>()(
         });
       }
 
-      // 获取有效的任务名称集合（包含 interface 任务和 MXU 特殊任务）
+      // 获取有效的任务名称集合（包含 interface 任务、MXU 特殊任务与 pretask 伪任务）
       const validTaskNames = new Set([
         ...(pi?.task.map((t) => t.name) || []),
         ...Object.keys(MXU_SPECIAL_TASKS),
+        ...getPretaskItems(pi).map((item) => pretaskName(item)),
       ]);
 
       const instances: Instance[] = config.instances.map((inst) => {
@@ -1102,6 +1118,28 @@ export const useAppStore = create<AppState>()(
                 customName: t.customName,
                 enabled: t.enabled,
                 optionValues: t.optionValues,
+                expanded: prevExpandedByTask.get(t.id) ?? false,
+              };
+            }
+
+            // pretask 伪任务的 option 引用顶层 pi.option
+            if (isPretaskName(t.taskName)) {
+              const pretaskItem = getPretaskItem(pi, t.taskName);
+              const cleanedValues = cleanOptionValues(t.optionValues, pi);
+              const defaultValues =
+                pretaskItem?.option && pi?.option
+                  ? initializeAllOptionValues(pretaskItem.option, pi.option)
+                  : {};
+              const mergedValues = {
+                ...defaultValues,
+                ...cleanedValues,
+              };
+              return {
+                id: t.id,
+                taskName: t.taskName,
+                customName: t.customName,
+                enabled: t.enabled,
+                optionValues: mergedValues,
                 expanded: prevExpandedByTask.get(t.id) ?? false,
               };
             }

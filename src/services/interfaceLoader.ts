@@ -7,7 +7,9 @@ import type {
   PresetItem,
   GroupItem,
   InterfaceSettingSection,
+  PretaskItem,
 } from '@/types/interface';
+import { normalizePretaskConfigs } from '@/types/interface';
 import { loggers } from '@/utils/logger';
 import { parseJsonc } from '@/utils/jsonc';
 import { isTauri } from '@/utils/paths';
@@ -16,7 +18,7 @@ import { setBackendPort } from '@/utils/backendApi';
 const log = loggers.app;
 
 /**
- * 可导入的 PI 文件结构（支持 task、option、global_option、preset、group 和 setting 字段）
+ * 可导入的 PI 文件结构（支持 task、option、global_option、preset、group、setting 和 pretask 字段）
  */
 interface ImportableInterface {
   task?: TaskItem[];
@@ -29,6 +31,8 @@ interface ImportableInterface {
   group?: GroupItem[];
   /** MXU 扩展：支持导入 setting */
   setting?: InterfaceSettingSection[];
+  /** v2.7.0: 支持导入 pretask */
+  pretask?: PretaskItem | PretaskItem[];
 }
 
 export interface LoadResult {
@@ -219,7 +223,7 @@ async function loadImportFromHttp(importPath: string): Promise<ImportableInterfa
 }
 
 /**
- * 合并导入的 task、option 和 setting 到主 interface
+ * 合并导入的 task、option、setting、pretask 等到主 interface
  * @param pi 主 ProjectInterface
  * @param imported 导入的内容
  */
@@ -292,6 +296,14 @@ function mergeImported(pi: ProjectInterface, imported: ImportableInterface): voi
         `忽略了 ${skippedDuplicates} 个重名 group，名称包括: ${uniqueDuplicateNames.join(', ')}`,
       );
     }
+  }
+
+  // v2.7.0: 合并 pretask（单对象视为一项，按导入顺序追加为有序列表）
+  const importedPretasks = normalizePretaskConfigs(imported.pretask);
+  if (importedPretasks && importedPretasks.length > 0) {
+    const existing = normalizePretaskConfigs(pi.pretask) || [];
+    pi.pretask = [...existing, ...importedPretasks];
+    log.info(`合并了 ${importedPretasks.length} 个导入的 pretask`);
   }
 }
 
