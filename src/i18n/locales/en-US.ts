@@ -499,7 +499,6 @@ export default {
     alreadyAdded: 'Already added',
     collapse: 'Collapse panel',
     specialTasks: 'Special Tasks',
-    execTasks: 'Auxiliary Tasks',
     pretasks: 'Pre-tasks',
     allSpecialTasksAdded: 'All added',
     ungroupedTasks: 'Others',

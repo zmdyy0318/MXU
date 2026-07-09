@@ -371,17 +371,9 @@ fn merge_imported(interface: &mut serde_json::Value, imported: &serde_json::Valu
         merged.extend(imported_pretasks);
         interface["pretask"] = serde_json::Value::Array(merged);
     }
-
-    // v2.9.0: 合并 exec_task（单对象视为一项，按导入顺序追加为有序列表）
-    let imported_exec_tasks = normalize_external_task(imported.get("exec_task"));
-    if !imported_exec_tasks.is_empty() {
-        let mut merged = normalize_external_task(interface.get("exec_task"));
-        merged.extend(imported_exec_tasks);
-        interface["exec_task"] = serde_json::Value::Array(merged);
-    }
 }
 
-/// 将 pretask / exec_task 字段（单对象或数组）标准化为 Vec，未定义则返回空 Vec。
+/// 将 pretask 字段（单对象或数组）标准化为 Vec，未定义则返回空 Vec。
 fn normalize_external_task(value: Option<&serde_json::Value>) -> Vec<serde_json::Value> {
     match value {
         Some(serde_json::Value::Array(arr)) => arr.clone(),

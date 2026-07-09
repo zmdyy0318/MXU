@@ -3,13 +3,20 @@
 // ----------------------------------------------------------------------------
 // 将项目在 interface.json 中声明的 pretask 映射为“伪任务”，复用现有任务的
 // 勾选/展开/选项渲染机制，作为卡片显示在任务列表顶部。
-// 与 exec_task 的区别在于执行时机：pretask 在连接 Controller 之前执行，且不进入
-// Tasker 执行队列，而是通过 run_pretask 直接启动外部程序。
+// pretask 在连接 Controller 之前执行，且不进入 Tasker 执行队列，而是通过
+// run_pretask 直接启动外部程序。
 // ============================================================================
 
-import type { ProjectInterface, PretaskItem, TaskItem, OptionValue } from './interface';
+import type {
+  ProjectInterface,
+  PretaskItem,
+  TaskItem,
+  OptionValue,
+  OptionDefinition,
+} from './interface';
 import { normalizePretaskConfigs } from './interface';
-import { serializeExecTaskOptions } from './execTasks';
+import { findSwitchCase } from '@/utils/optionHelpers';
+import { createDefaultOptionValue, sanitizeOptionValue } from '@/stores/helpers';
 
 /** pretask 伪任务在流程中的入口节点名（pretask 不进 Tasker，仅作占位） */
 export const PRETASK_ENTRY = 'MXU_PRETASK';
@@ -64,8 +71,111 @@ export function buildPretaskDef(item: PretaskItem): TaskItem {
 }
 
 /**
+ * 按协议将 pretask 的 option 当前取值序列化为 { [optionKey]: OptionValue } 对象。
+ * - select / switch -> case.name 字符串
+ * - checkbox -> case.name 字符串数组
+ * - input -> { 输入名: 值 }
+ * 递归包含因选择而激活的嵌套 option；跳过不满足 controller/resource 限制的 option。
+ */
+function collectPretaskOptionValues(
+  optionKey: string,
+  optionValues: Record<string, OptionValue>,
+  allOptions: Record<string, OptionDefinition>,
+  result: Record<string, unknown>,
+  controllerName?: string,
+  resourceName?: string,
+): void {
+  const optionDef = allOptions[optionKey];
+  if (!optionDef) return;
+
+  // 过滤不满足当前 controller / resource 的 option
+  if (optionDef.controller && optionDef.controller.length > 0) {
+    if (!controllerName || !optionDef.controller.includes(controllerName)) return;
+  }
+  if (optionDef.resource && optionDef.resource.length > 0) {
+    if (!resourceName || !optionDef.resource.includes(resourceName)) return;
+  }
+
+  if (result[optionKey] !== undefined) return;
+
+  const savedValue = optionValues[optionKey];
+  const sanitizedValue = savedValue ? sanitizeOptionValue(optionKey, savedValue, allOptions) : null;
+  const optionValue = sanitizedValue || createDefaultOptionValue(optionDef);
+
+  if (optionValue.type === 'checkbox') {
+    result[optionKey] = [...optionValue.caseNames];
+    return;
+  }
+
+  if (optionValue.type === 'input') {
+    const values: Record<string, string> = {};
+    if (optionDef.type === 'input') {
+      for (const input of optionDef.inputs || []) {
+        values[input.name] = optionValue.values[input.name] ?? input.default ?? '';
+      }
+    }
+    result[optionKey] = values;
+    return;
+  }
+
+  // select / switch
+  let caseName: string;
+  if (optionValue.type === 'switch') {
+    const switchCase =
+      'cases' in optionDef ? findSwitchCase(optionDef.cases, optionValue.value) : undefined;
+    caseName = switchCase?.name || (optionValue.value ? 'Yes' : 'No');
+  } else {
+    caseName = optionValue.caseName;
+  }
+  result[optionKey] = caseName;
+
+  // 递归处理激活 case 的嵌套 option
+  if ('cases' in optionDef) {
+    const caseDef = optionDef.cases?.find((c) => c.name === caseName);
+    if (caseDef?.option) {
+      for (const nestedKey of caseDef.option) {
+        collectPretaskOptionValues(
+          nestedKey,
+          optionValues,
+          allOptions,
+          result,
+          controllerName,
+          resourceName,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * 生成 pretask option 取值的单行紧凑 JSON 字符串。
+ * 若 item.option 未设置或为空则返回 undefined（不追加该参数）。
+ */
+export function serializePretaskOptions(
+  item: PretaskItem,
+  optionValues: Record<string, OptionValue>,
+  pi: ProjectInterface | null | undefined,
+  controllerName?: string,
+  resourceName?: string,
+): string | undefined {
+  if (!item.option || item.option.length === 0) return undefined;
+  const allOptions = pi?.option || {};
+  const result: Record<string, unknown> = {};
+  for (const optionKey of item.option) {
+    collectPretaskOptionValues(
+      optionKey,
+      optionValues,
+      allOptions,
+      result,
+      controllerName,
+      resourceName,
+    );
+  }
+  return JSON.stringify(result);
+}
+
+/**
  * 构造传给外部程序的完整参数数组：固定 args 后追加序列化后的 option JSON（若有）。
- * pretask 与 exec_task 的 option 语义一致，因此直接复用 exec_task 的序列化实现。
  */
 export function buildPretaskArgs(
   item: PretaskItem,
@@ -75,7 +185,7 @@ export function buildPretaskArgs(
   resourceName?: string,
 ): string[] {
   const args = [...(item.args || [])];
-  const optionJson = serializeExecTaskOptions(item, optionValues, pi, controllerName, resourceName);
+  const optionJson = serializePretaskOptions(item, optionValues, pi, controllerName, resourceName);
   if (optionJson !== undefined) {
     args.push(optionJson);
   }

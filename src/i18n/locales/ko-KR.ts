@@ -491,7 +491,6 @@ export default {
     alreadyAdded: '추가됨',
     collapse: '패널 접기',
     specialTasks: '특수 작업',
-    execTasks: '보조 작업',
     pretasks: '사전 작업',
     allSpecialTasksAdded: '모두 추가됨',
     ungroupedTasks: '기타',

@@ -34,7 +34,6 @@ import { normalizeAgentConfigs } from '@/types/interface';
 import type { PretaskItem } from '@/types/interface';
 import { getInterfaceLangKey } from '@/i18n';
 import { getMxuSpecialTask } from '@/types/specialTasks';
-import { getExecTaskItem, buildExecTaskDef } from '@/types/execTasks';
 import { isPretaskName, getPretaskItem, buildPretaskArgs } from '@/types/pretasks';
 import { splitTasksIntoThreeSegments } from '@/utils/taskSegmentation';
 import { startGlobalCallbackListener } from '@/components/connection/callbackCache';
@@ -249,10 +248,8 @@ function InstanceCard({ instanceId, instanceName, isActive, onSelect }: Instance
               // pretask 不进入 Tasker 队列，已在连接 Controller 前单独执行
               if (isPretaskName(selectedTask.taskName)) return null;
               const specialTask = getMxuSpecialTask(selectedTask.taskName);
-              const execTaskItem = getExecTaskItem(projectInterface, selectedTask.taskName);
               const taskDef =
                 specialTask?.taskDef ||
-                (execTaskItem ? buildExecTaskDef(execTaskItem) : undefined) ||
                 projectInterface?.task.find((t) => t.name === selectedTask.taskName);
               if (!taskDef) return null;
               return {
@@ -298,7 +295,6 @@ function InstanceCard({ instanceId, instanceName, isActive, onSelect }: Instance
                   projectInterface,
                   currentControllerName,
                   currentResourceName,
-                  basePath,
                 ),
                 selected_task_id: selectedTask.id,
               };

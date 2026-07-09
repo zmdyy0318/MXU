@@ -31,7 +31,7 @@ import type {
 } from '@/types/interface';
 import type { ConnectionStatus, TaskStatus } from '@/types/maa';
 import { getMxuSpecialTask, isMxuSpecialTask, MXU_SPECIAL_TASKS } from '@/types/specialTasks';
-import { getExecTaskItems, execTaskName, isExecTaskName, getExecTaskItem } from '@/types/execTasks';
+import { getPretaskItems, pretaskName, isPretaskName, getPretaskItem } from '@/types/pretasks';
 import { decryptCdk, encryptCdk } from '@/utils/cdkCrypto';
 import { loggers } from '@/utils/logger';
 import { findSwitchCase } from '@/utils/optionHelpers';
@@ -1035,11 +1035,11 @@ export const useAppStore = create<AppState>()(
         });
       }
 
-      // 获取有效的任务名称集合（包含 interface 任务、MXU 特殊任务与 exec_task 伪任务）
+      // 获取有效的任务名称集合（包含 interface 任务、MXU 特殊任务与 pretask 伪任务）
       const validTaskNames = new Set([
         ...(pi?.task.map((t) => t.name) || []),
         ...Object.keys(MXU_SPECIAL_TASKS),
-        ...getExecTaskItems(pi).map((item) => execTaskName(item)),
+        ...getPretaskItems(pi).map((item) => pretaskName(item)),
       ]);
 
       const instances: Instance[] = config.instances.map((inst) => {
@@ -1070,13 +1070,13 @@ export const useAppStore = create<AppState>()(
               };
             }
 
-            // exec_task 伪任务的 option 引用顶层 pi.option
-            if (isExecTaskName(t.taskName)) {
-              const execItem = getExecTaskItem(pi, t.taskName);
+            // pretask 伪任务的 option 引用顶层 pi.option
+            if (isPretaskName(t.taskName)) {
+              const pretaskItem = getPretaskItem(pi, t.taskName);
               const cleanedValues = cleanOptionValues(t.optionValues, pi);
               const defaultValues =
-                execItem?.option && pi?.option
-                  ? initializeAllOptionValues(execItem.option, pi.option)
+                pretaskItem?.option && pi?.option
+                  ? initializeAllOptionValues(pretaskItem.option, pi.option)
                   : {};
               const mergedValues = {
                 ...defaultValues,

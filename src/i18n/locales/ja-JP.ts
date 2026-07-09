@@ -493,7 +493,6 @@ export default {
     noResults: '一致するタスクが見つかりません',
     alreadyAdded: '追加済み',
     specialTasks: '特殊タスク',
-    execTasks: '補助タスク',
     pretasks: '事前タスク',
     allSpecialTasksAdded: 'すべて追加済み',
     collapse: 'パネルを閉じる',
