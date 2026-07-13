@@ -228,6 +228,9 @@ export default {
       resourceFailed: '资源加载失败',
       startFailed: '任务启动失败',
       agentStartParams: 'Agent #{{index}} 启动参数: {{cmd}}  (工作目录: {{cwd}})',
+      agentSpawnHintFileNotFound: '提示：请先检查 Agent 是否被杀软拦截，确认无误后重新覆盖安装。',
+      agentSpawnHintAppControl:
+        '提示：请在「Windows 安全中心 → 应用和浏览器控制 → 智能应用控制」中关闭该功能后重试。',
       needConfig: '请先连接设备并加载资源，或在连接面板保存设备配置',
     },
   },
@@ -455,6 +458,7 @@ export default {
       loadingResource: '正在加载资源: {{name}}',
       resourceLoaded: '资源加载成功: {{name}}',
       resourceFailed: '资源加载失败: {{name}}',
+      resourceFailedHint: '若仍无法加载，可删除该资源目录后重新覆盖安装再试。',
       // 任务消息
       taskStarting: '任务开始: {{name}}',
       taskSucceeded: '任务完成: {{name}}',

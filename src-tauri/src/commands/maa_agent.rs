@@ -370,10 +370,16 @@ async fn start_single_agent(
         }
 
         let mut child = cmd.spawn().map_err(|e| {
-            format!(
+            let mut msg = format!(
                 "Failed to spawn agent #{}: {} (path: {:?})",
                 agent_index, e, exec_path
-            )
+            );
+            match e.raw_os_error() {
+                Some(2) => msg.push_str(" [[hint:spawn_file_not_found]]"),
+                Some(4551) => msg.push_str(" [[hint:spawn_app_control]]"),
+                _ => {}
+            }
+            msg
         })?;
 
         // agent 日志文件路径（延迟创建：仅在有实际输出时才打开文件）

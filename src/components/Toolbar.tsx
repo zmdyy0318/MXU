@@ -1246,9 +1246,18 @@ export function Toolbar({ showAddPanel, onToggleAddPanel, className }: ToolbarPr
         const errMsg = err instanceof Error ? err.message : String(err);
         const cancelled = errMsg === PRE_ACTION_CANCELLED_ERROR;
         if (!cancelled) {
+          const localizedErrMsg = errMsg
+            .replace(
+              ' [[hint:spawn_file_not_found]]',
+              ` ${t('taskList.autoConnect.agentSpawnHintFileNotFound')}`,
+            )
+            .replace(
+              ' [[hint:spawn_app_control]]',
+              ` ${t('taskList.autoConnect.agentSpawnHintAppControl')}`,
+            );
           addLog(targetId, {
             type: 'error',
-            message: `${t('taskList.autoConnect.startFailed')}: ${errMsg}`,
+            message: `${t('taskList.autoConnect.startFailed')}: ${localizedErrMsg}`,
           });
         }
 

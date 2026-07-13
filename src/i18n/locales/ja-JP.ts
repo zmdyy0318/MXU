@@ -229,6 +229,10 @@ export default {
       resourceFailed: 'リソースの読み込みに失敗しました',
       startFailed: 'タスクの開始に失敗しました',
       agentStartParams: 'Agent #{{index}} 起動パラメータ: {{cmd}}  (作業ディレクトリ: {{cwd}})',
+      agentSpawnHintFileNotFound:
+        'ヒント：Agent がセキュリティソフトにブロックされていないか確認し、問題なければ上書き再インストールしてください。',
+      agentSpawnHintAppControl:
+        'ヒント：「Windows セキュリティ → アプリとブラウザー制御 → スマート アプリ コントロール」でこの機能をオフにしてから再試行してください。',
       needConfig:
         'まずデバイスを接続してリソースを読み込むか、接続パネルでデバイス設定を保存してください',
     },
@@ -462,6 +466,8 @@ export default {
       loadingResource: 'リソースを読み込み中: {{name}}',
       resourceLoaded: 'リソースを読み込みました: {{name}}',
       resourceFailed: 'リソースの読み込みに失敗しました: {{name}}',
+      resourceFailedHint:
+        '読み込みに失敗し続ける場合は、該当リソースのディレクトリを削除してから上書き再インストールをお試しください。',
       // タスクメッセージ
       taskStarting: 'タスクを開始: {{name}}',
       taskSucceeded: 'タスクが完了しました: {{name}}',

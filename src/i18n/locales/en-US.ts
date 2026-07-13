@@ -235,6 +235,10 @@ export default {
       resourceFailed: 'Resource loading failed',
       startFailed: 'Failed to start tasks',
       agentStartParams: 'Agent #{{index}} start params: {{cmd}}  (cwd: {{cwd}})',
+      agentSpawnHintFileNotFound:
+        'Hint: Check whether antivirus blocked the Agent, then reinstall by overwriting the installation.',
+      agentSpawnHintAppControl:
+        'Hint: Turn off Smart App Control under Windows Security → App & browser control, then retry.',
       needConfig:
         'Please connect device and load resource first, or save device config in connection panel',
     },
@@ -466,6 +470,8 @@ export default {
       loadingResource: 'Loading resource: {{name}}',
       resourceLoaded: 'Resource loaded: {{name}}',
       resourceFailed: 'Resource load failed: {{name}}',
+      resourceFailedHint:
+        'If the issue persists, try deleting the resource directory and reinstalling (overwrite) before retrying.',
       // Task messages
       taskStarting: 'Task started: {{name}}',
       taskSucceeded: 'Task completed: {{name}}',
