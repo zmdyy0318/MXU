@@ -261,6 +261,24 @@ fn resolve_child_exec_path(child_exec: &str, cwd: &str) -> PathBuf {
     }
 }
 
+/// Windows Application Control policy rejection (Smart App Control).
+///
+/// `CreateProcess` returns this when an executable is blocked as untrusted.
+/// Typical message: "An Application Control policy has blocked this file."
+#[cfg(windows)]
+const WINDOWS_ERROR_APPLICATION_CONTROL_BLOCKED: i32 = 4551;
+
+fn agent_spawn_hint_tag(error: &std::io::Error) -> Option<&'static str> {
+    if error.kind() == std::io::ErrorKind::NotFound {
+        return Some(" [[hint:spawn_file_not_found]]");
+    }
+    #[cfg(windows)]
+    if error.raw_os_error() == Some(WINDOWS_ERROR_APPLICATION_CONTROL_BLOCKED) {
+        return Some(" [[hint:spawn_app_control]]");
+    }
+    None
+}
+
 /// 启动单个 Agent 子进程并完成连接
 async fn start_single_agent(
     app: tauri::AppHandle,
@@ -370,10 +388,14 @@ async fn start_single_agent(
         }
 
         let mut child = cmd.spawn().map_err(|e| {
-            format!(
+            let mut msg = format!(
                 "Failed to spawn agent #{}: {} (path: {:?})",
                 agent_index, e, exec_path
-            )
+            );
+            if let Some(tag) = agent_spawn_hint_tag(&e) {
+                msg.push_str(tag);
+            }
+            msg
         })?;
 
         // agent 日志文件路径（延迟创建：仅在有实际输出时才打开文件）
